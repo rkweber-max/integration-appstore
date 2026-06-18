@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Configuração carregada de variáveis de ambiente (ver .env.example).
 var (
 	clientID     string
 	clientSecret string
@@ -51,12 +50,10 @@ func main() {
 	}
 }
 
-// loadDotEnv carrega pares CHAVE=valor de um arquivo .env (opcional), sem
-// sobrescrever variáveis já definidas no ambiente.
 func loadDotEnv(path string) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return // .env é opcional
+		return
 	}
 
 	for _, line := range strings.Split(string(data), "\n") {
@@ -160,7 +157,6 @@ func installFinished(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Se a Appmax respondeu erro (4xx/5xx), propaga o status real em vez de 200.
 	if status >= 400 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
@@ -172,7 +168,6 @@ func installFinished(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Com as credenciais do merchant em mãos, obtém o access_token do merchant.
 	merchantID, merchantSecret, err := extractMerchantClient(result)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -209,8 +204,6 @@ func installFinished(w http.ResponseWriter, r *http.Request) {
 
 func callbackInstall(w http.ResponseWriter, r *http.Request) {
 
-	// Quando o merchant volta do appstore, a Appmax redireciona o navegador
-	// (GET) para a url_callback com o token de instalação na query string.
 	if token := r.URL.Query().Get("token"); token != "" {
 		installFinished(w, r)
 		return
@@ -326,13 +319,10 @@ func appAuthorize(bearerToken string) (map[string]interface{}, int, error) {
 	return result, resp.StatusCode, nil
 }
 
-// getToken obtém o access_token do próprio app (credenciais fixas).
 func getToken() (map[string]interface{}, int, error) {
 	return requestToken(clientID, clientSecret)
 }
 
-// requestToken faz o client_credentials no OAuth2 com as credenciais informadas.
-// Usado tanto para o app quanto para as credenciais geradas do merchant.
 func requestToken(id, secret string) (map[string]interface{}, int, error) {
 
 	formData := url.Values{}
@@ -375,8 +365,6 @@ func requestToken(id, secret string) (map[string]interface{}, int, error) {
 	return result, resp.StatusCode, nil
 }
 
-// extractMerchantClient navega o JSON aninhado retornado por createMerchantCredentials
-// ({"data":{"client":{"client_id":...,"client_secret":...}}}) e devolve as credenciais.
 func extractMerchantClient(result map[string]interface{}) (string, string, error) {
 	data, ok := result["data"].(map[string]interface{})
 	if !ok {
