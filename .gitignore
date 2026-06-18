@@ -1,0 +1,9 @@
+# Variáveis de ambiente com credenciais (NÃO versionar)
+.env
+
+# Binário compilado
+/integration-appstore
+/main
+
+# Sistema
+.DS_Store
